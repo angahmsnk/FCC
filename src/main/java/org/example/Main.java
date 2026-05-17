@@ -1,29 +1,16 @@
 package org.example;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
-    private static final String DATABASE_FILE = "database.json";
-    private static Map<String, String> fileDatabase = new HashMap<>();
-    static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) {
 
-        loadDatabase();
+        Map<String, String> fileDatabase = DatabaseHandler.loadDatabase();
 
         Scanner scanner = new Scanner(System.in);
         int option = 1;
@@ -70,7 +57,7 @@ public class Main {
 
                     if (!fileDatabase.containsKey(fileKey)) {
                         fileDatabase.put(fileKey, currentHash);
-                        saveDatabase();
+                        DatabaseHandler.saveDatabase(fileDatabase);
                         System.out.println("Plik nie byl wczesniej sprawdzany przez aplikacje. Zapisano hash pliku.");
                     }
                     else {
@@ -82,7 +69,7 @@ public class Main {
                         else {
                             System.out.println("Wykryto zmiane pliku. Zaktualizowano hash.");
                             fileDatabase.put(fileKey, currentHash);
-                            saveDatabase();
+                            DatabaseHandler.saveDatabase(fileDatabase);
                         }
                     }
 
@@ -92,30 +79,5 @@ public class Main {
             }
         }
         scanner.close();
-    }
-
-    public static void loadDatabase() {
-        File file = new File(DATABASE_FILE);
-        if (!file.exists()) {
-            return;
-        }
-
-        try (FileReader reader = new FileReader(file)) {
-            Type type = new TypeToken<HashMap<String, String>>() {}.getType();
-            Map<String, String> loadedData = gson.fromJson(reader, type);
-            if (loadedData != null) {
-                fileDatabase = loadedData;
-            }
-        } catch (IOException e) {
-            System.out.println("Blad wczytywania bazy plikow: " + e.getMessage());
-        }
-    }
-
-    public static void saveDatabase() {
-        try (FileWriter writer = new FileWriter(DATABASE_FILE)) {
-            gson.toJson(fileDatabase, writer);
-        } catch (IOException e) {
-            System.out.println("Blad zapisu danych do pliku: " + e.getMessage());
-        }
     }
 }
